@@ -1,7 +1,12 @@
+import pathlib
+import os
+
 # need to pip install pytftpdlib
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
+
+os.chdir(pathlib.Path(__file__).parent.resolve())
 
 authorizer = DummyAuthorizer() # handle permission and user
 authorizer.add_anonymous("./data/" , perm='adfmwM')
