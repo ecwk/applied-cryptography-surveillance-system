@@ -3,8 +3,11 @@ import trace
 import sys
 
 from views import view, mainViews
-from ftp.client import onCamera
-from ftp.genRsa import generatePrivateKey, savePrivateKey, savePubKey
+from auth import onCamera
+from util.genRsa import generatePrivateKey, savePrivateKey, savePubKey
+from util.config import config
+
+USERNAME = config['DEFAULT'].get('username')
 
 def main():
   cameraOn = False
