@@ -52,6 +52,9 @@ def decryptChallenge(challengeMsg):
   return decrypted
 
 
+#############################################
+# REPLACE SESSION KEY GEN WITH KEY-EXCHANGE # 
+#############################################
 def getSessionKey(decryptedChallenge):
   response = AuthApi.post('/solveChallenge', {
     'username': USERNAME,
@@ -59,14 +62,30 @@ def getSessionKey(decryptedChallenge):
   })
   body = response['body']
 
-  symmetricKey = None
+  sessionKey = None
   if response['status'] == 200:
-    symmetricKey = body.get('sessionKey')
+    sessionKey = body.get('sessionKey')
   else:
-    symmetricKey = body.get('message')
+    sessionKey = body.get('message')
 
+  with open('../keys/id_rsa', 'r') as f:
+    privateKey = f.read().encode('utf-8')
+    privateKey = load_ssh_private_key(privateKey, password=None)
 
-  return symmetricKey
+    try:
+      decrypted = privateKey.decrypt(
+        sessionKey,
+        padding.OAEP(
+          mgf=padding.MGF1(algorithm=hashes.SHA256()),
+          algorithm=hashes.SHA256(),
+          label=None
+        )
+      )
+    except ValueError:
+      print('Invalid private key')
+      return None
+
+  return decrypted
 
 
 
