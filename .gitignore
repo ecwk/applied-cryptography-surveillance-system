@@ -5,6 +5,7 @@
 
 # My own additions
 temp/
+*.jpg
 
 # User-specific files
 *.rsuser
