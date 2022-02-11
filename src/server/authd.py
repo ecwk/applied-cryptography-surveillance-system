@@ -66,10 +66,9 @@ def startAuthServer():
       challengeMsg,
       PADDING
     )
-    
+ 
     res.status(200)
     res.send({ 'challengeMsg': encryptedChallenge })
-
     print(USER_SESSIONS)
 
 
@@ -106,7 +105,7 @@ def startAuthServer():
 
       res.status(200)
       res.send({'sessionKey': sessionKey})
-    
+
 
   @app.post('/upload')
   def upload(req, res):
@@ -139,18 +138,16 @@ def startAuthServer():
         res.send({ 'message': 'post /solveChallenge first' })
         return
 
-  # initialise AES encryptor
+    # initialise AES decryptor
     algorithm = algorithms.AES(sessionKey)
     mode = modes.CBC(iv)
     cipher = Cipher(algorithm, mode)
     decryptor = cipher.decryptor()
 
-
-    print(f'{filename}[{username}]({iv}): ciphertext\n{data}')
+    # decrypt data
     decryptedData = decryptor.update(data) + decryptor.finalize()
     decryptedData = decryptedData.rstrip(b' ')
 
-    print(f'\n{filename}[{username}]({iv}): plaintext\n{decryptedData}')
     res.status(200)
     res.send({ 'message': 'uploaded' })
 
