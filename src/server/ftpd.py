@@ -6,7 +6,6 @@ from pyftpdlib.handlers import FTPHandler, TLS_FTPHandler
 from pyftpdlib.servers import FTPServer
 
 from models import UserModel
-from auth import app
 
 os.chdir(pathlib.Path(__file__).parent.resolve())
 
@@ -14,7 +13,7 @@ BASE_DIR = os.path.join(os.getcwd(), 'data')
 ANONYMOUS_DIR = os.path.join(os.getcwd(), 'data/anonymous')
 ADDRESS = ('127.0.0.1', 2121)
 
-def main():
+def startFtpServer():
   users = UserModel.getAll()
   authorizer = DummyAuthorizer()
   for user in users:
@@ -39,10 +38,3 @@ def main():
   server = FTPServer(ADDRESS, handler)
 
   server.serve_forever()
-
-print(UserModel.getAll())
-
-main()
-
-
-
