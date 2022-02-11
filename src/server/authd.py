@@ -69,7 +69,6 @@ def startAuthServer():
  
     res.status(200)
     res.send({ 'challengeMsg': encryptedChallenge })
-    print(USER_SESSIONS)
 
 
   @app.post('/solveChallenge')
@@ -102,9 +101,18 @@ def startAuthServer():
           else:
             sessionKey = session['sessionKey']
           break
+      print(USER_SESSIONS)
+
+      # Encrypt sessionKey with pubKey before sending
+      pubKey = user['pubKey'].encode('utf-8')
+      pubKey = load_ssh_public_key(pubKey)
+      encryptedSessionKey = pubKey.encrypt(
+        sessionKey,
+        PADDING
+      )
 
       res.status(200)
-      res.send({'sessionKey': sessionKey})
+      res.send({ 'sessionKey': encryptedSessionKey })
 
 
   @app.post('/upload')
