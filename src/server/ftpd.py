@@ -6,6 +6,7 @@ from pyftpdlib.handlers import FTPHandler, TLS_FTPHandler
 from pyftpdlib.servers import FTPServer
 
 from models import UserModel
+from auth import app
 
 os.chdir(pathlib.Path(__file__).parent.resolve())
 

@@ -16,17 +16,22 @@ UserSchema = Schema({
     'type': 'str',
     'required': True
   },
-  'lastModified': {
+  'challengeMsg': {
     'type': 'str',
-    'default': getCurrentDateTime(),
-    'defaultUpdate': True,
-    'required': True
+    'required': False,
+    'default': ''
   },
   'dateCreated': {
     'type': 'str',
     'default': getCurrentDateTime(),
     'required': True
-  }
+  },
+  'pubKey': {
+    'type': 'str',
+    'required': False,
+    'default': '',
+  },
+
 })
 
 UserModel = Model(UserSchema, config['PATHS']['users'])
