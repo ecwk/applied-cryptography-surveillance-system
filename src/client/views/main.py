@@ -15,7 +15,7 @@ def main(**props):
   return {
     'title': [
       {
-       'text': [f'{config["DEFAULT"]["name"]}' , ' ⬤'],
+       'text': [f'{config["DEFAULT"]["username"]}' , ' ⬤'],
        'types': [['bold'], None],
        'color': [None, [cameraOnStr['color'][1][0], None]],
       }
