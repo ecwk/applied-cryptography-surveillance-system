@@ -15,6 +15,7 @@ PADDING = padding.OAEP(
   label=None
 )
 
+
 def startAuthServer():
   @app.post('/challenge')
   def getChallenge(req, res):
@@ -37,7 +38,6 @@ def startAuthServer():
     challengeMsg = user['challengeMsg'].encode('utf-8')
     pubKey = user['pubKey'].encode('utf-8')
     pubKey = load_ssh_public_key(pubKey)
-
     encryptedChallenge = pubKey.encrypt(
       challengeMsg,
       PADDING
@@ -45,6 +45,7 @@ def startAuthServer():
     
     res.status(200)
     res.send({ 'challengeMsg': encryptedChallenge })
+
 
   @app.post('/solveChallenge')
   def solveChallenge(req, res):
@@ -57,7 +58,12 @@ def startAuthServer():
       return
 
     user = user[0]
-    challengeAttempt = body.get
+    challengeAttempt = body.get('challengeMsg')
+    challengeMsg = user['challengeMsg'].encode('utf-8')
+
+    if challengeAttempt == challengeMsg:
+      res.status(200)
+      res.send({'message': 'Success'})
     
 
   @app.post('/upload')
@@ -66,10 +72,8 @@ def startAuthServer():
     mac = body.get('mac')
     username = req.body('username')
 
+
   @app.listen(ADDRESS)
   def listenCallback():
     clearConsole()
     print(f'Server listening on [ { ADDRESS[0] }:{ ADDRESS[1] } ]')
-
-
-user = UserModel.find({ 'username': 'cam-001' })
