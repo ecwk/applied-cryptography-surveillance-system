@@ -1,18 +1,29 @@
-import pathlib
 import os
+import pathlib
 
-# need to pip install pytftpdlib
 from pyftpdlib.authorizers import DummyAuthorizer
-from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.handlers import FTPHandler, TLS_FTPHandler
 from pyftpdlib.servers import FTPServer
 
 os.chdir(pathlib.Path(__file__).parent.resolve())
 
-authorizer = DummyAuthorizer() # handle permission and user
-authorizer.add_anonymous("./data/" , perm='adfmwM')
-handler = FTPHandler #  understand FTP protocol
-handler.authorizer = authorizer
-server = FTPServer(("127.0.0.1", 2121), handler) # bind to high port, port 21 need root permission
-server.serve_forever()
+ANONYMOUS_DIR = os.path.join(os.getcwd(), 'data/anonymous')
+ADDRESS = ('127.0.0.1', 2121)
 
 
+def main():
+  authorizer = DummyAuthorizer()
+  authorizer.add_user('cam-001', '12345', f'data/cam-001', perm='elradfmwMT')
+  authorizer.add_anonymous(ANONYMOUS_DIR, perm='elradfmwMT')
+
+  handler = FTPHandler
+  handler.authorizer = authorizer
+
+
+
+  server = FTPServer(ADDRESS, handler)
+
+  server.serve_forever()
+
+
+main()
