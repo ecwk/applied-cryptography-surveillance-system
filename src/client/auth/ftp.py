@@ -1,3 +1,5 @@
+import os
+import pathlib
 import base64
 import time
 import datetime
@@ -5,10 +7,14 @@ from ftplib import FTP
 import io
 import random
 
+from auth.auth import getChallengeMsg, decryptChallenge
+from util.config import config
 
+os.chdir(pathlib.Path(__file__).parent.resolve())
 CAMERA_ID = 1   # This ID is unique for each camera installed, should it be in the code?
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = 2121
+USERNAME = config['DEFAULT'].get('username')
 
 def connect_server_send( file_name: str , file_data: bytes ) -> bool:
   """This function send file_data using FTP and save it as file_name in the remote server. It will simulate intermittent transfer. 
@@ -37,6 +43,19 @@ def connect_server_send( file_name: str , file_data: bytes ) -> bool:
     return False
 
 
+# def onCamera():
+#   while True: # Main function
+#     try:  
+#       my_image = get_picture()  # get picture
+#       if len(my_image) == 0:
+#         time.sleep(10) # sleep for 10 sec if there is no image
+#         print( "Random no motion detected")
+#       else:
+#         f_name = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
+#         if connect_server_send(f_name , my_image): print(f_name , " sent" )
+#     except KeyboardInterrupt:  exit()  # gracefully exit if control-C detected
+
+
 def get_picture() -> bytes:
   """This function simulate a motion activated camera unit.  It will return 0 byte if no motion is detected.
   Returns:
@@ -51,17 +70,22 @@ def get_picture() -> bytes:
   else:
     return base64.b64decode(my_pict)
 
-def onCamera():
-  while True: # Main function
-    try:  
-      my_image = get_picture()  # get picture
-      if len(my_image) == 0:
-        time.sleep(10) # sleep for 10 sec if there is no image
-        print( "Random no motion detected")
-      else:
-        f_name = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
-        if connect_server_send(f_name , my_image): print(f_name , " sent" )
-        # connect_server_send(f_name , my_image)
-    except KeyboardInterrupt:  exit()  # gracefully exit if control-C detected
 
-onCamera()
+
+
+def onCamera():
+  challengeMsg = getChallengeMsg(USERNAME)
+  decryptedChallenge = decryptChallenge(challengeMsg)
+  # print(decryptedChallenge)
+  # input('Press Enter to continue')
+
+  # while True:
+    # try:  
+    #   image = get_picture()  # get picture
+    #   if len(image) == 0:
+    #     time.sleep(10) # sleep if no image
+    #     print( "Random no motion detected")
+    #   else:
+    #     f_name = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
+    #     if connect_server_send(f_name , image): print(f_name , " sent" )
+    # except KeyboardInterrupt:  exit()  # gracefully exit if control-C detected
