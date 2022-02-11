@@ -1,12 +1,12 @@
 import base64
 import time
 import datetime
-import ftplib
+from ftplib import FTP
 import io
 import random
 
 
-CAMERA_ID = 102   # This ID is unique for each camera installed, should it be in the code?
+CAMERA_ID = 1   # This ID is unique for each camera installed, should it be in the code?
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = 2121
 
@@ -20,9 +20,15 @@ def connect_server_send( file_name: str , file_data: bytes ) -> bool:
   """
   try:
     if random.randrange(1,10) > 8: raise Exception("Generated Random Network Error")   # create random failed transfer   
-    ftp = ftplib.FTP()  # use init will use port 21 , hence use connect()
-    ftp.connect( SERVER_IP , SERVER_PORT) # use high port 2121 instead of 21
-    ftp.login()  # ftp.login(user="anonymous", passwd = 'anonymous@')
+    
+    ftp = FTP()
+    ftp.connect(SERVER_IP , SERVER_PORT)
+
+    camId = str(CAMERA_ID).rjust(3, '0')
+    username = f'cam-{camId}'
+    password = ''
+    ftp.login(username, password)
+
     ftp.storbinary('STOR ' + file_name, io.BytesIO( file_data ) )
     ftp.quit()
     return True
@@ -45,14 +51,17 @@ def get_picture() -> bytes:
   else:
     return base64.b64decode(my_pict)
 
+def onCamera():
+  while True: # Main function
+    try:  
+      my_image = get_picture()  # get picture
+      if len(my_image) == 0:
+        time.sleep(10) # sleep for 10 sec if there is no image
+        print( "Random no motion detected")
+      else:
+        f_name = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
+        if connect_server_send(f_name , my_image): print(f_name , " sent" )
+        # connect_server_send(f_name , my_image)
+    except KeyboardInterrupt:  exit()  # gracefully exit if control-C detected
 
-while True: # Main function
-  try:  
-    my_image = get_picture()  # get picture
-    if len(my_image) == 0:
-      time.sleep(10) # sleep for 10 sec if there is no image
-      print( "Random no motion detected")
-    else:
-      f_name = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
-      if connect_server_send(f_name , my_image): print(f_name , " sent" )
-  except KeyboardInterrupt:  exit()  # gracefully exit if control-C detected
+onCamera()
