@@ -1,9 +1,11 @@
 import os
 import pathlib
+import random
 
 from cryptography.hazmat.primitives.serialization import load_ssh_private_key
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 
 from auth import AuthApi
 from util.config import config
@@ -57,9 +59,63 @@ def getSessionKey(decryptedChallenge):
 
   symmetricKey = None
   if response['status'] == 200:
-    symmetricKey = body.get('symmetricKey')
+    symmetricKey = body.get('sessionKey')
   else:
     symmetricKey = body.get('message')
 
 
   return symmetricKey
+
+
+
+def uploadServer(filename, data, sessionKey):
+  try:
+    if random.randrange(1,10) > 8: raise Exception("Generated Random Network Error")   # create random failed transfer   
+    
+    # initialise AES encryptor
+    algorithm = algorithms.AES(sessionKey)
+    iv = os.urandom(16)
+    mode = modes.CBC(iv)
+    cipher = Cipher(algorithm, mode)
+    encryptor = cipher.encryptor()
+
+    # encrypt data
+    extra = len(data) % 16
+    if extra > 0:
+      data = data +  (' ' * (16 - extra))
+    data = data.encode('utf-8')
+
+    encryptedData = encryptor.update(data) + encryptor.finalize()
+
+    response = AuthApi.post('/upload', {
+      'username': USERNAME,
+      'filename': filename,
+      'data': encryptedData,
+      'iv': iv
+    })
+    body = response['body']
+    print(body)
+
+    ## THIS WILL BE TRANSFERRED TO SERVER, ftp calls made on loopback addr
+    # ftp = FTP()
+    # ftp.connect(SERVER_IP , SERVER_PORT)
+
+    # camId = str(CAMERA_ID).rjust(3, '0')
+    # username = f'cam-{camId}'
+    # password = ''
+    # ftp.login(username, password)
+
+    # ftp.storbinary('STOR ' + file_name, io.BytesIO( file_data ) )
+    # ftp.quit()
+    return True
+  except Exception as e:
+    print(e, "while sending", filename )
+    return False
+
+
+# decryptor = cipher.decryptor()
+# plaintext = decryptor.update(ciphertext) + decryptor.finalize()
+# # remove space padding
+# plaintext = plaintext.rstrip(b' ')
+
+# print(plaintext)
