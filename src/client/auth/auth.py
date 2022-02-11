@@ -9,9 +9,11 @@ from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 
 from auth import AuthApi
 from util.config import config
+from util.tools import fetchMockData
 
 os.chdir(pathlib.Path(__file__).parent.resolve())
 USERNAME = config['DEFAULT'].get('username')
+
 
 def getChallengeMsg(username):
   response = AuthApi.post('/challenge', {
@@ -69,8 +71,8 @@ def getSessionKey(decryptedChallenge):
 
 
 def uploadServer(filename, data, sessionKey):
-  try:
-    if random.randrange(1,10) > 8: raise Exception("Generated Random Network Error")   # create random failed transfer   
+  # try:
+  #   if random.randrange(1,10) > 8: raise Exception("Generated Random Network Error")   # create random failed transfer   
     
     # initialise AES encryptor
     algorithm = algorithms.AES(sessionKey)
@@ -82,8 +84,7 @@ def uploadServer(filename, data, sessionKey):
     # encrypt data
     extra = len(data) % 16
     if extra > 0:
-      data = data +  (' ' * (16 - extra))
-    data = data.encode('utf-8')
+      data = data + (b' ' * (16 - extra))
 
     encryptedData = encryptor.update(data) + encryptor.finalize()
 
@@ -94,8 +95,6 @@ def uploadServer(filename, data, sessionKey):
       'iv': iv
     })
     body = response['body']
-    print(body)
-
     ## THIS WILL BE TRANSFERRED TO SERVER, ftp calls made on loopback addr
     # ftp = FTP()
     # ftp.connect(SERVER_IP , SERVER_PORT)
@@ -108,9 +107,9 @@ def uploadServer(filename, data, sessionKey):
     # ftp.storbinary('STOR ' + file_name, io.BytesIO( file_data ) )
     # ftp.quit()
     return True
-  except Exception as e:
-    print(e, "while sending", filename )
-    return False
+  # except Exception as e:
+  #   print(e, "while sending", filename )
+  #   return False
 
 
 # decryptor = cipher.decryptor()
