@@ -20,24 +20,24 @@ def generatePrivateKey():
     key_size=4096,
   )
 
-def PrivateKeyBytes(key):
+def privateKeyBytes(key):
   return key.private_bytes(
     encoding=serialization.Encoding.PEM,
     format=serialization.PrivateFormat.OpenSSH,
     encryption_algorithm=serialization.NoEncryption()
   )
 
-def PublicKeyBytes(key):
+def publicKeyBytes(key):
   return key.public_key().public_bytes(
     encoding=serialization.Encoding.OpenSSH,
     format=serialization.PublicFormat.OpenSSH
   )
 
 def savePrivateKey(key):
-  with open('./keys/id_rsa', 'wb') as f:
-    f.write(PrivateKeyBytes(key))
+  with open('../keys/id_rsa', 'wb') as f:
+    f.write(privateKeyBytes(key))
 
 
 def savePubKey(key):
-  with open('./keys/id_rsa.pub', 'wb') as f:
-    f.write(PublicKeyBytes(key))
+  with open('../keys/id_rsa.pub', 'wb') as f:
+    f.write(publicKeyBytes(key))
