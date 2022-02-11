@@ -4,7 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # My own additions
-temp/
+*temp*
 *.jpg
 
 # User-specific files
