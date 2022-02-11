@@ -16,11 +16,6 @@ UserSchema = Schema({
     'type': 'str',
     'required': True
   },
-  'challengeMsg': {
-    'type': 'str',
-    'required': False,
-    'default': ''
-  },
   'dateCreated': {
     'type': 'str',
     'default': getCurrentDateTime(),
