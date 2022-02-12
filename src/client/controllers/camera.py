@@ -22,6 +22,7 @@ PADDING = padding.OAEP(
   label=None
 )
 
+
 def getPrivKey(passphrase: bytes):
   privateKey = ''
 

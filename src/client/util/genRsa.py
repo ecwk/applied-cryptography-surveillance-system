@@ -7,12 +7,12 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 
 os.chdir(pathlib.Path(__file__).parent.resolve())
-
 PADDING = padding.OAEP(
   mgf=padding.MGF1(algorithm=hashes.SHA256()),
   algorithm=hashes.SHA256(),
   label=None
 )
+
 
 def generatePrivateKey():
   return rsa.generate_private_key(

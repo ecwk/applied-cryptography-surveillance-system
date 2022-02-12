@@ -51,5 +51,6 @@ def hiddenInput(output=''):
       print('')
       return processedVal
 
+
 def getDateStr():
   return datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
