@@ -4,7 +4,6 @@ import sys
 import time
 import datetime
 
-from auth import AuthApi
 import controllers.logger as logger
 from views import view, mainViews
 import controllers.camera as camera
@@ -45,6 +44,7 @@ def main():
           decryptedChallenge = camera.decryptChallenge(challenge, privKey)
           sessionKey = camera.getSessionKey(CAMERA_ID, decryptedChallenge, privKey)
 
+          # Start Camera: each image sent is encrypted with shared AES key
           try:
             if not sessionKey:
               raise Exception("Session key not found")
