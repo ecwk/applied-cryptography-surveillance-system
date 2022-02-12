@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from cryptography.hazmat.primitives.serialization import load_ssh_public_key
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -6,6 +7,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 
 from auth import Server as AuthServer
+from auth.ftp import uploadToFtpd
 from models import UserModel
 from util.tools import clearConsole, generateChallenge
 
@@ -89,19 +91,20 @@ def startAuthServer():
       res.send({ 'message': 'post /challenge first' })
       return
 
+    # Solve Challenge
     challengeAttempt = body.get('challengeMsg')
     challengeMsg = session['challengeMsg'].encode('utf-8')
+
+    # If correct, remove current challengeMsg from memory
     if challengeAttempt == challengeMsg:
-      sessionKey = None
+
+      # if session already exists
       for i, session in enumerate(USER_SESSIONS):
         if session['userId'] == user['userId']:
-          if session['sessionKey'] is None:
-            sessionKey = os.urandom(16)
-            USER_SESSIONS[i]['sessionKey'] = sessionKey
-          else:
-            sessionKey = session['sessionKey']
+          session['challengeMsg'] = None
+          sessionKey = os.urandom(16)
+          USER_SESSIONS[i]['sessionKey'] = sessionKey
           break
-      print(USER_SESSIONS)
 
       # Encrypt sessionKey with pubKey before sending
       pubKey = user['pubKey'].encode('utf-8')
@@ -113,6 +116,10 @@ def startAuthServer():
 
       res.status(200)
       res.send({ 'sessionKey': encryptedSessionKey })
+      print(USER_SESSIONS)
+    else:
+      res.status(401)
+      res.send({ 'message': 'incorrect challenge attempt' })
 
 
   @app.post('/upload')
@@ -146,15 +153,40 @@ def startAuthServer():
         res.send({ 'message': 'post /solveChallenge first' })
         return
 
-    # initialise AES decryptor
-    algorithm = algorithms.AES(sessionKey)
-    mode = modes.CBC(iv)
-    cipher = Cipher(algorithm, mode)
-    decryptor = cipher.decryptor()
+    try:
+      # initialise AES decryptor
+      algorithm = algorithms.AES(sessionKey)
+      mode = modes.CBC(iv)
+      cipher = Cipher(algorithm, mode)
+      decryptor = cipher.decryptor()
 
-    # decrypt data
-    decryptedData = decryptor.update(data) + decryptor.finalize()
-    decryptedData = decryptedData.rstrip(b' ')
+      # decrypt data
+      decryptedData = decryptor.update(data) + decryptor.finalize()
+      decryptedData = decryptedData.rstrip(b' ')
+
+      # if data is to close connection/session
+      if decryptedData == b'close':
+        for i, session in enumerate(USER_SESSIONS):
+          if session['userId'] == user['userId']:
+            del USER_SESSIONS[i]
+            break
+      else:
+      # upload file via ftp on server's loopback
+        print(f'sent {filename}')
+        uploadToFtpd(username, filename, decryptedData)
+      
+      # remove current session key from memory
+      for i, session in enumerate(USER_SESSIONS):
+        if session['userId'] == user['userId']:
+          USER_SESSIONS[i]['sessionKey'] = None
+          break
+
+    except Exception as e:
+      # if wrong sessionKey
+      print(e)
+      res.status(400)
+      res.send({ 'message': f'{e}' })
+      return
 
     res.status(200)
     res.send({ 'message': 'uploaded' })
