@@ -94,34 +94,45 @@ def getSessionKey(username, decryptedChallenge, privateKey):
   return decryptedSessionKey
 
 
-def uploadServer(username, filename, data, sessionKey):
+def uploadServer(username, filename, data, sessionKey, privKey):
   try:
     if random.randrange(1,10) > 8: raise Exception("Generated Random Network Error")   # create random failed transfer   
     
+    # sign the data
+    signature = privKey.sign(
+      data,
+      padding.PSS(
+        mgf=padding.MGF1(hashes.SHA256()),
+        salt_length=padding.PSS.MAX_LENGTH
+      ),
+      hashes.SHA256()
+    )
+
     # initialise AES encryptor
     algorithm = algorithms.AES(sessionKey)
     iv = os.urandom(16)
     mode = modes.CBC(iv)
     cipher = Cipher(algorithm, mode)
-    encryptor = cipher.encryptor()
 
-    # encrypt data
+    # encrypt data + signature
     extra = len(data) % 16
     if extra > 0:
       data = data + (b' ' * (16 - extra))
-
-    encryptedData = encryptor.update(data) + encryptor.finalize()
+    encryptor1 = cipher.encryptor()
+    encryptedData = encryptor1.update(data) + encryptor1.finalize()
+    encryptor2 = cipher.encryptor()
+    encryptedSignature = encryptor2.update(signature) + encryptor2.finalize()
 
     response = AuthApi.post('/upload', {
       'username': username,
       'filename': filename,
       'data': encryptedData,
+      'signature': encryptedSignature,
       'iv': iv
     })
-    body = response['body']
+
     return True
   except Exception as e:
-    logger.log(f'[{username}]_{e} while uploading {filename}_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
     return False
 
 
