@@ -31,8 +31,7 @@ def main():
         { 'text': 'Lock Private Key' if privKey else 'Unlock Private Key' },
         { 'text': 'Generate RSA Keys' },
         { 'text': 'View Logs' },
-        { 'text': 'Clear Logs' },
-        { 'text': 'Settings' }
+        { 'text': 'Clear Logs' }
       ]
     )
 
@@ -125,9 +124,6 @@ def main():
       if input('Are you sure? (y/n): ') == 'y':
         logger.clearLogFile()
 
-    elif item == 6:
-      ...
-
     else:
       try:
         if t1.is_alive():
@@ -138,7 +134,6 @@ def main():
       except:
         pass
       exit()
-
 
 
 class ThreadWithTrace(threading.Thread):
