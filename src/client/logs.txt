@@ -1,0 +1,44 @@
+[12-02-2022 23:42:32][INFO]_Uploaded_cam-001_12-02-2022_23-42-32.jpg
+[12-02-2022 23:42:33][ERROR]_Generated Random Network Error
+[12-02-2022 23:42:33][ERROR]_Failed to upload_cam-001_12-02-2022_23-42-33.jpg
+[12-02-2022 23:42:33][INFO]_Retrying
+[12-02-2022 23:42:33][INFO]_Reupload Successful_cam-001_12-02-2022_23-42-33.jpg
+[12-02-2022 23:42:34][INFO]_Uploaded_cam-001_12-02-2022_23-42-34.jpg
+[12-02-2022 23:42:35][INFO]_Uploaded_cam-001_12-02-2022_23-42-35.jpg
+[12-02-2022 23:42:36][INFO]_Uploaded_cam-001_12-02-2022_23-42-36.jpg
+[12-02-2022 23:42:37][INFO]_Uploaded_cam-001_12-02-2022_23-42-37.jpg
+[12-02-2022 23:42:38][INFO]_Uploaded_cam-001_12-02-2022_23-42-38.jpg
+[12-02-2022 23:42:39][INFO]_Uploaded_cam-001_12-02-2022_23-42-39.jpg
+[12-02-2022 23:42:45][INFO]_Random no motion detected
+[12-02-2022 23:42:46][INFO]_Uploaded_cam-001_12-02-2022_23-42-46.jpg
+[12-02-2022 23:42:47][INFO]_Uploaded_cam-001_12-02-2022_23-42-47.jpg
+[12-02-2022 23:42:48][INFO]_Uploaded_cam-001_12-02-2022_23-42-48.jpg
+[12-02-2022 23:42:49][INFO]_Uploaded_cam-001_12-02-2022_23-42-49.jpg
+[12-02-2022 23:42:50][INFO]_Uploaded_cam-001_12-02-2022_23-42-50.jpg
+[12-02-2022 23:42:56][INFO]_Random no motion detected
+[12-02-2022 23:42:58][INFO]_Uploaded_cam-001_12-02-2022_23-42-58.jpg
+[12-02-2022 23:42:59][INFO]_Uploaded_cam-001_12-02-2022_23-42-59.jpg
+[12-02-2022 23:43:05][INFO]_Random no motion detected
+[12-02-2022 23:43:06][INFO]_Uploaded_cam-001_12-02-2022_23-43-06.jpg
+[12-02-2022 23:43:07][INFO]_Uploaded_cam-001_12-02-2022_23-43-07.jpg
+[12-02-2022 23:43:08][INFO]_Uploaded_cam-001_12-02-2022_23-43-08.jpg
+[12-02-2022 23:43:09][INFO]_Uploaded_cam-001_12-02-2022_23-43-09.jpg
+[12-02-2022 23:43:10][INFO]_Uploaded_cam-001_12-02-2022_23-43-10.jpg
+[12-02-2022 23:43:11][INFO]_Uploaded_cam-001_12-02-2022_23-43-11.jpg
+[12-02-2022 23:43:12][INFO]_Uploaded_cam-001_12-02-2022_23-43-12.jpg
+[12-02-2022 23:43:13][INFO]_Uploaded_cam-001_12-02-2022_23-43-13.jpg
+[12-02-2022 23:43:14][INFO]_Uploaded_cam-001_12-02-2022_23-43-14.jpg
+[12-02-2022 23:43:15][INFO]_Uploaded_cam-001_12-02-2022_23-43-15.jpg
+[12-02-2022 23:43:16][INFO]_Uploaded_cam-001_12-02-2022_23-43-16.jpg
+[12-02-2022 23:43:17][INFO]_Uploaded_cam-001_12-02-2022_23-43-17.jpg
+[12-02-2022 23:43:18][INFO]_Uploaded_cam-001_12-02-2022_23-43-18.jpg
+[12-02-2022 23:43:19][INFO]_Uploaded_cam-001_12-02-2022_23-43-19.jpg
+[12-02-2022 23:43:22][ERROR]_[WinError 10061] No connection could be made because the target machine actively refused it
+[12-02-2022 23:43:22][ERROR]_Failed to upload_cam-001_12-02-2022_23-43-20.jpg
+[12-02-2022 23:43:22][INFO]_Retrying
+[12-02-2022 23:43:24][ERROR]_[WinError 10061] No connection could be made because the target machine actively refused it
+[12-02-2022 23:43:24][ERROR]_Failed to upload_cam-001_12-02-2022_23-43-20.jpg
+[12-02-2022 23:43:24][INFO]_Retrying
+[12-02-2022 23:43:26][ERROR]_[WinError 10061] No connection could be made because the target machine actively refused it
+[12-02-2022 23:43:26][ERROR]_Failed to upload_cam-001_12-02-2022_23-43-20.jpg
+[12-02-2022 23:43:26][INFO]_Retrying
