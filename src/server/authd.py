@@ -1,10 +1,12 @@
 import os
 import datetime
+from pprint import pprint
 
 from cryptography.hazmat.primitives.serialization import load_ssh_public_key
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
+from cryptography.exceptions import InvalidSignature
 
 from auth import Server as AuthServer
 from auth.ftp import uploadToFtpd
@@ -41,28 +43,33 @@ def startAuthServer():
     body = req.body
     username = body.get('username')
     user = UserModel.find({ 'username': username })
+
+    # Request Validifications
     if not user:
       res.status(404)
       res.send({ 'message': 'user not found' })
       return
-
     user = user[0]
+
+    # Generate session / Regenerate challenge
     session = None
-    for i, _user in enumerate(USER_SESSIONS):
+    for i, _user in enumerate(USER_SESSIONS): # Regen challenge if session exists
       if _user['userId'] == user['userId']:
-        USER_SESSIONS[i]['challengeMsg'] = generateChallenge(CHALLENGE_LENGTH)
+        USER_SESSIONS[i]['challengeMsg'] = os.urandom(CHALLENGE_LENGTH)
         session = USER_SESSIONS[i]
         break
+
+    # Generate Session if not exists
     if session is None:
       session = {
         'userId': user['userId'],
-        'challengeMsg': generateChallenge(CHALLENGE_LENGTH),
+        'challengeMsg': os.urandom(CHALLENGE_LENGTH),
         'sessionKey': None
       }
       USER_SESSIONS.append(session)
 
-    challengeMsg = session['challengeMsg'].encode('utf-8')
-    pubKey = user['pubKey'].encode('utf-8')
+    challengeMsg = session['challengeMsg']
+    pubKey = user['pubKey'].encode('utf-8') # from users.csv
     pubKey = load_ssh_public_key(pubKey)
     encryptedChallenge = pubKey.encrypt(
       challengeMsg,
@@ -72,12 +79,12 @@ def startAuthServer():
     res.status(200)
     res.send({ 'challengeMsg': encryptedChallenge })
 
-
   @app.post('/solveChallenge')
   def solveChallenge(req, res):
     body = req.body
     username = body.get('username')
     user = UserModel.find({ 'username': username })
+    challengeAttempt = body.get('challengeMsg')
 
     # Request Validifications
     if not user:
@@ -92,13 +99,11 @@ def startAuthServer():
       return
 
     # Solve Challenge
-    challengeAttempt = body.get('challengeMsg')
-    challengeMsg = session['challengeMsg'].encode('utf-8')
+    challengeMsg = session['challengeMsg']
 
     # If correct, remove current challengeMsg from memory
     if challengeAttempt == challengeMsg:
 
-      # if session already exists
       for i, session in enumerate(USER_SESSIONS):
         if session['userId'] == user['userId']:
           session['challengeMsg'] = None
@@ -116,11 +121,13 @@ def startAuthServer():
 
       res.status(200)
       res.send({ 'sessionKey': encryptedSessionKey })
-      print(USER_SESSIONS)
     else:
+      for i, session in enumerate(USER_SESSIONS):
+        if session['userId'] == user['userId']:
+          USER_SESSIONS.pop(i)
+          break
       res.status(401)
       res.send({ 'message': 'incorrect challenge attempt' })
-
 
   @app.post('/upload')
   def upload(req, res):
@@ -164,33 +171,75 @@ def startAuthServer():
       decryptedData = decryptor.update(data) + decryptor.finalize()
       decryptedData = decryptedData.rstrip(b' ')
 
-      # if data is to close connection/session
-      if decryptedData == b'close':
-        for i, session in enumerate(USER_SESSIONS):
-          if session['userId'] == user['userId']:
-            del USER_SESSIONS[i]
-            break
-      else:
+
       # upload file via ftp on server's loopback
-        print(f'sent {filename}')
-        uploadToFtpd(username, filename, decryptedData)
+      uploadToFtpd(username, filename, decryptedData)
       
-      # remove current session key from memory
+      # remove current session
       for i, session in enumerate(USER_SESSIONS):
         if session['userId'] == user['userId']:
-          USER_SESSIONS[i]['sessionKey'] = None
+          USER_SESSIONS.pop(i)
           break
 
     except Exception as e:
       # if wrong sessionKey
-      print(e)
       res.status(400)
       res.send({ 'message': f'{e}' })
+      # remove current session
+      for i, session in enumerate(USER_SESSIONS):
+        if session['userId'] == user['userId']:
+          USER_SESSIONS.pop(i)
+          break
       return
-
     res.status(200)
     res.send({ 'message': 'uploaded' })
 
+
+  @app.post('/close')
+  def close(req, res):
+    body = req.body
+    message = body.get('message')
+    signature = body.get('signature')
+    username = body.get('username')
+
+    # Request Validifications
+    if not (message and signature and username):
+      res.status(404)
+      res.send({ 'message': 'missing parameters' })
+      return
+    user = UserModel.find({ 'username': username })
+    if not user:
+      res.status(404)
+      res.send({ 'message': 'user not found' })
+      return
+    user = user[0]
+
+    # Verify Signature
+    pubKey = user['pubKey'].encode('utf-8')
+    pubKey = load_ssh_public_key(pubKey)
+
+    try:
+      pubKey.verify(
+        signature,
+        message,
+        padding.PSS(
+          mgf=padding.MGF1(hashes.SHA256()),
+          salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256()
+      )
+
+      # Close session
+      for i, session in enumerate(USER_SESSIONS):
+        if session['userId'] == user['userId']:
+          USER_SESSIONS.pop(i)
+          break
+
+    except InvalidSignature:
+      res.status(401)
+      res.send({ 'message': 'invalid signature' })
+      return
+    
 
   @app.listen(ADDRESS)
   def listenCallback():
