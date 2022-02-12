@@ -2,7 +2,7 @@ import os
 import pathlib
 
 from pyftpdlib.authorizers import DummyAuthorizer
-from pyftpdlib.handlers import FTPHandler, TLS_FTPHandler
+from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
 
 from models import UserModel
@@ -30,9 +30,6 @@ def startFtpServer():
 
   handler = FTPHandler
   handler.authorizer = authorizer
-
-
-
   server = FTPServer(ADDRESS, handler)
 
   server.serve_forever()
