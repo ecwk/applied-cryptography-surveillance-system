@@ -18,7 +18,6 @@ def main():
   privKey = None
   sessionKey = None
   cameraOn = False
-
   item = 1
   while True:
     item = view(
@@ -46,7 +45,7 @@ def main():
             decryptedChallenge = camera.decryptChallenge(challenge, privKey)
             sessionKey = camera.getSessionKey(CAMERA_ID, decryptedChallenge, privKey)
 
-            # Start Camera: each image sent is encrypted with shared AES key
+            # Start Camera: each image sent is encrypted with session key
             if not sessionKey:
               raise Exception("Session key not found")
 
@@ -68,15 +67,11 @@ def main():
                   logger.log(f'[{getDateStr()}][ERROR]_Failed to upload_{filename}')
                   logger.log(f'[{getDateStr()}][INFO]_Retrying')
                   successfulUpload = False
-  
           except KeyboardInterrupt: exit()
           except Exception as e:
             logger.log(f'[{getDateStr()}][ERROR]_{str(e)}')
-      
 
-
-
-
+      # Disable camera if already enabled
       if cameraOn:
         t1.kill()
         t1.join()

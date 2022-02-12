@@ -16,6 +16,8 @@ ADDRESS = ('127.0.0.1', 2121)
 def startFtpServer():
   users = UserModel.getAll()
   authorizer = DummyAuthorizer()
+
+  # Register ftp directories under /data/user['username']
   for user in users:
     USER_DIR = os.path.join(BASE_DIR, user['username'])
     if not os.path.exists(USER_DIR):

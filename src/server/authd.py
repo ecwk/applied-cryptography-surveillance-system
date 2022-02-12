@@ -11,7 +11,7 @@ from cryptography.exceptions import InvalidSignature
 from auth import Server as AuthServer
 from auth.ftp import uploadToFtpd
 from models import UserModel
-from util.tools import clearConsole, generateChallenge
+from util.tools import clearConsole
 
 ADDRESS = ('127.0.0.1', 8000)
 app = AuthServer()
@@ -24,12 +24,14 @@ PADDING = padding.OAEP(
 
 # In-memory Session Storage
 USER_SESSIONS = [
-  # {
+  # {  for example
   #   'userId': 1,
   #   'challengeMsg': generateChallenge(64),
   #   'sessionKey': os.urandom(16)
   # }
 ]
+
+
 def getSession(userId):
   for session in USER_SESSIONS:
     if session['userId'] == userId:
@@ -51,9 +53,9 @@ def startAuthServer():
       return
     user = user[0]
 
-    # Generate session / Regenerate challenge
+    # Regenerate challenge if session exists
     session = None
-    for i, _user in enumerate(USER_SESSIONS): # Regen challenge if session exists
+    for i, _user in enumerate(USER_SESSIONS):
       if _user['userId'] == user['userId']:
         USER_SESSIONS[i]['challengeMsg'] = os.urandom(CHALLENGE_LENGTH)
         session = USER_SESSIONS[i]
@@ -68,6 +70,7 @@ def startAuthServer():
       }
       USER_SESSIONS.append(session)
 
+    # Send encrypted challenge
     challengeMsg = session['challengeMsg']
     pubKey = user['pubKey'].encode('utf-8') # from users.csv
     pubKey = load_ssh_public_key(pubKey)
@@ -75,9 +78,9 @@ def startAuthServer():
       challengeMsg,
       PADDING
     )
- 
     res.status(200)
     res.send({ 'challengeMsg': encryptedChallenge })
+
 
   @app.post('/solveChallenge')
   def solveChallenge(req, res):
@@ -98,12 +101,9 @@ def startAuthServer():
       res.send({ 'message': 'post /challenge first' })
       return
 
-    # Solve Challenge
+    # Solve Challenge, gen session key if correct and remove previous challenge
     challengeMsg = session['challengeMsg']
-
-    # If correct, remove current challengeMsg from memory
     if challengeAttempt == challengeMsg:
-
       for i, session in enumerate(USER_SESSIONS):
         if session['userId'] == user['userId']:
           session['challengeMsg'] = None
@@ -118,9 +118,9 @@ def startAuthServer():
         sessionKey,
         PADDING
       )
-
       res.status(200)
       res.send({ 'sessionKey': encryptedSessionKey })
+
     else:
       for i, session in enumerate(USER_SESSIONS):
         if session['userId'] == user['userId']:
@@ -128,6 +128,7 @@ def startAuthServer():
           break
       res.status(401)
       res.send({ 'message': 'incorrect challenge attempt' })
+
 
   @app.post('/upload')
   def upload(req, res):
@@ -149,7 +150,7 @@ def startAuthServer():
       return
     user = user[0]
 
-    # check if sessionKey exists
+    # check if user sessionKey exists
     sessionKey = None
     for user_ in USER_SESSIONS:
       if user_['userId'] == user['userId']:
@@ -211,6 +212,7 @@ def startAuthServer():
       # if wrong sessionKey
       res.status(400)
       res.send({ 'message': f'{e}' })
+
       # remove current session
       for i, session in enumerate(USER_SESSIONS):
         if session['userId'] == user['userId']:
