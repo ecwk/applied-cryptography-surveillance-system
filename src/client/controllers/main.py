@@ -16,6 +16,7 @@ CAMERA_ID = config['DEFAULT'].get('username')
 
 def main():
   privKey = None
+  sessionKey = None
   cameraOn = False
 
   item = 1
@@ -51,11 +52,11 @@ def main():
 
             image = camera.fetchMockData()
             if len(image) == 0:
-              time.sleep(10)
+              time.sleep(1)
               logger.log(f'[{CAMERA_ID}]_Random no motion detected_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
             else:
               filename = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
-              
+
               successfulUpload = False
               while successfulUpload == False:
                 if camera.uploadServer(CAMERA_ID, filename, image, sessionKey, privKey):
@@ -64,13 +65,15 @@ def main():
                 else:
                   logger.log(f'[{CAMERA_ID}]_Failed to upload {filename}')
                   logger.log(f'[{CAMERA_ID}]_Retrying')
-
+  
           except KeyboardInterrupt: exit()
 
       if cameraOn:
         t1.kill()
         t1.join()
-        camera.closeSession(CAMERA_ID, privKey)
+        # if quit before uplaoding, session still exists and must be closed
+        if sessionKey:
+          camera.closeSession(CAMERA_ID, privKey, sessionKey)
         cameraOn = False
         privKey = None
 
@@ -126,6 +129,8 @@ def main():
         if t1.is_alive():
           t1.kill()
           t1.join()
+          if sessionKey:
+            camera.closeSession(CAMERA_ID, privKey, sessionKey)
       except:
         pass
       exit()
