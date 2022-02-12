@@ -44,7 +44,7 @@ def startAuthServer():
     username = body.get('username')
     user = UserModel.find({ 'username': username })
 
-    # Request Validifications
+    # Request Validations
     if not user:
       res.status(404)
       res.send({ 'message': 'user not found' })
@@ -86,7 +86,7 @@ def startAuthServer():
     user = UserModel.find({ 'username': username })
     challengeAttempt = body.get('challengeMsg')
 
-    # Request Validifications
+    # Request Validations
     if not user:
       res.status(404)
       res.send({ 'message': 'user not found' })
@@ -137,7 +137,7 @@ def startAuthServer():
     data = body.get('data')
     iv = body.get('iv')
 
-    # Request Validifications
+    # Request Validations
     if not (username and filename and data and iv):
       res.status(404)
       res.send({ 'message': 'missing parameters' })
@@ -228,7 +228,7 @@ def startAuthServer():
     signature = body.get('signature')
     username = body.get('username')
 
-    # Request Validifications
+    # Request Validations
     if not (message and signature and username):
       res.status(404)
       res.send({ 'message': 'missing parameters' })
