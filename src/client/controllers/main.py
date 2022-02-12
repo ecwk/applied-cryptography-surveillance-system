@@ -1,12 +1,14 @@
-
 import threading
 import trace
 import sys
+import time
+import datetime
 
+from auth import AuthApi
 import controllers.logger as logger
 from views import view, mainViews
-from controllers.camera import getPrivKey, runCamera, fetchMockData
-# from auth import onCamera
+import controllers.camera as camera
+from controllers.camera import getPrivKey
 from util.genRsa import generatePrivateKey, savePrivateKey, savePubKey
 from util.config import config
 from util.tools import hiddenInput, clearConsole
@@ -36,9 +38,31 @@ def main():
     )
 
     if item == 1:
+      def runCamera():
+        while True:
+          # Authentication handshake
+          challenge = camera.getChallengeMsg(CAMERA_ID)
+          decryptedChallenge = camera.decryptChallenge(challenge, privKey)
+          sessionKey = camera.getSessionKey(CAMERA_ID, decryptedChallenge, privKey)
+
+          try:
+            if not sessionKey:
+              raise Exception("Session key not found")
+
+            image = camera.fetchMockData()
+            if len(image) == 0:
+              time.sleep(1)
+              logger.log(f'[{CAMERA_ID}]_Random no motion detected_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+            else:
+              filename = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
+              if camera.uploadServer(CAMERA_ID, filename, image, sessionKey):
+                logger.log(f'[{CAMERA_ID}]_Uploaded {filename}_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+          except KeyboardInterrupt: exit()
+
       if cameraOn:
         t1.kill()
         t1.join()
+        camera.closeSession(CAMERA_ID, privKey)
         cameraOn = False
         privKey = None
 
@@ -48,8 +72,7 @@ def main():
           input('Press Enter to Continue')
           continue
         t1 = ThreadWithTrace(
-          target=runCamera,
-          args=(CAMERA_ID, privKey)
+          target=runCamera
         )
         t1.start()
         cameraOn = True
@@ -91,9 +114,12 @@ def main():
       ...
 
     else:
-      if t1.is_alive():
-        t1.kill()
-        t1.join()
+      try:
+        if t1.is_alive():
+          t1.kill()
+          t1.join()
+      except:
+        pass
       exit()
 
 

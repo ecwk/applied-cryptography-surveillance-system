@@ -15,7 +15,11 @@ from auth import AuthApi
 from util.config import config
 
 os.chdir(pathlib.Path(__file__).parent.resolve())
-
+PADDING = padding.OAEP(
+  mgf=padding.MGF1(algorithm=hashes.SHA256()),
+  algorithm=hashes.SHA256(),
+  label=None
+)
 
 def getPrivKey(passphrase: bytes):
   privateKey = ''
@@ -51,13 +55,10 @@ def decryptChallenge(challengeMsg, privateKey):
   try:
     decrypted = privateKey.decrypt(
       challengeMsg,
-      padding.OAEP(
-        mgf=padding.MGF1(algorithm=hashes.SHA256()),
-        algorithm=hashes.SHA256(),
-        label=None
-      )
+      PADDING
     )
-  except ValueError:
+  except ValueError as e:
+    print(e)
     print('Invalid private key')
     return None
 
@@ -86,8 +87,9 @@ def getSessionKey(username, decryptedChallenge, privateKey):
         label=None
       )
     )
-  except ValueError:
+  except ValueError as e:
     print('Invalid private key')
+    print(e)
     return None
   return decryptedSessionKey
 
@@ -157,3 +159,28 @@ def runCamera(CAMERA_ID, privateKey):
         if uploadServer(CAMERA_ID, filename, image, sessionKey):
           logger.log(f'[{CAMERA_ID}]_Uploaded {filename}_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
     except KeyboardInterrupt: exit()
+    
+
+def closeSession(username, privateKey):
+  data = b'close'
+
+  # sign the data
+  signature = privateKey.sign(
+    data,
+    padding.PSS(
+      mgf=padding.MGF1(hashes.SHA256()),
+      salt_length=padding.PSS.MAX_LENGTH
+    ),
+    hashes.SHA256()
+  )
+
+  # encrypt data
+  ...
+  
+  response = AuthApi.post('/close', {
+    'username': username,
+    'message': data,
+    'signature': signature
+  })
+  
+  return True
