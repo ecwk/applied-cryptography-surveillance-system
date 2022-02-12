@@ -1,9 +1,7 @@
 import re
 import os
 import sys
-import time
-import random
-import base64
+import datetime
 from msvcrt import getch
 
 
@@ -52,3 +50,6 @@ def hiddenInput(output=''):
         processedVal += char
       print('')
       return processedVal
+
+def getDateStr():
+  return datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")

@@ -10,7 +10,7 @@ import controllers.camera as camera
 from controllers.camera import getPrivKey
 from util.genRsa import generatePrivateKey, savePrivateKey, savePubKey
 from util.config import config
-from util.tools import hiddenInput, clearConsole
+from util.tools import hiddenInput, clearConsole, getDateStr
 
 CAMERA_ID = config['DEFAULT'].get('username')
 
@@ -40,33 +40,42 @@ def main():
     if item == 1:
       def runCamera():
         while True:
-          # Authentication handshake
-          challenge = camera.getChallengeMsg(CAMERA_ID)
-          decryptedChallenge = camera.decryptChallenge(challenge, privKey)
-          sessionKey = camera.getSessionKey(CAMERA_ID, decryptedChallenge, privKey)
-
-          # Start Camera: each image sent is encrypted with shared AES key
           try:
+            # Authentication handshake
+            challenge = camera.getChallengeMsg(CAMERA_ID)
+            decryptedChallenge = camera.decryptChallenge(challenge, privKey)
+            sessionKey = camera.getSessionKey(CAMERA_ID, decryptedChallenge, privKey)
+
+            # Start Camera: each image sent is encrypted with shared AES key
             if not sessionKey:
               raise Exception("Session key not found")
 
             image = camera.fetchMockData()
             if len(image) == 0:
-              time.sleep(1)
-              logger.log(f'[{CAMERA_ID}]_Random no motion detected_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+              time.sleep(5)
+              logger.log(f'[{getDateStr()}][INFO]_Random no motion detected')
             else:
-              filename = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
+              filename = f'{str(CAMERA_ID)}_{datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.jpg'
 
-              successfulUpload = False
-              while successfulUpload == False:
+              successfulUpload = True
+              while True:
+                str_ = 'Uploaded' if successfulUpload else 'Reupload Successful'
+
                 if camera.uploadServer(CAMERA_ID, filename, image, sessionKey, privKey):
-                  logger.log(f'[{CAMERA_ID}]_Uploaded {filename}')
-                  successfulUpload = True
+                  logger.log(f'[{getDateStr()}][INFO]_{str_}_{filename}')
+                  break
                 else:
-                  logger.log(f'[{CAMERA_ID}]_Failed to upload {filename}')
-                  logger.log(f'[{CAMERA_ID}]_Retrying')
+                  logger.log(f'[{getDateStr()}][ERROR]_Failed to upload_{filename}')
+                  logger.log(f'[{getDateStr()}][INFO]_Retrying')
+                  successfulUpload = False
   
           except KeyboardInterrupt: exit()
+          except Exception as e:
+            logger.log(f'[{getDateStr()}][ERROR]_{str(e)}')
+      
+
+
+
 
       if cameraOn:
         t1.kill()

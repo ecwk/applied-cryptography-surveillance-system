@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 
 from auth import AuthApi
 from util.config import config
+from util.tools import getDateStr
 
 os.chdir(pathlib.Path(__file__).parent.resolve())
 PADDING = padding.OAEP(
@@ -43,6 +44,7 @@ def getChallengeMsg(username):
   body = response['body']
 
   challengeMsg = None
+  
   if response['status'] == 200:
     challengeMsg = body.get('challengeMsg')
   else:
@@ -52,15 +54,10 @@ def getChallengeMsg(username):
 
 
 def decryptChallenge(challengeMsg, privateKey):
-  try:
-    decrypted = privateKey.decrypt(
-      challengeMsg,
-      PADDING
-    )
-  except ValueError as e:
-    print(e)
-    print('Invalid private key')
-    return None
+  decrypted = privateKey.decrypt(
+    challengeMsg,
+    PADDING
+  )
 
   return decrypted
 
@@ -78,19 +75,14 @@ def getSessionKey(username, decryptedChallenge, privateKey):
   else:
     sessionKey = body.get('message')
 
-  try:
-    decryptedSessionKey = privateKey.decrypt(
-      sessionKey,
-      padding.OAEP(
-        mgf=padding.MGF1(algorithm=hashes.SHA256()),
-        algorithm=hashes.SHA256(),
-        label=None
-      )
+  decryptedSessionKey = privateKey.decrypt(
+    sessionKey,
+    padding.OAEP(
+      mgf=padding.MGF1(algorithm=hashes.SHA256()),
+      algorithm=hashes.SHA256(),
+      label=None
     )
-  except ValueError as e:
-    print('Invalid private key')
-    print(e)
-    return None
+  )
   return decryptedSessionKey
 
 
@@ -133,6 +125,7 @@ def uploadServer(username, filename, data, sessionKey, privKey):
 
     return True
   except Exception as e:
+    logger.log(f'[{getDateStr()}][ERROR]_{e}')
     return False
 
 
