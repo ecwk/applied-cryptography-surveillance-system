@@ -28,8 +28,6 @@ def startFtpServer():
       perm='elradfmw'
     )
 
-  authorizer.add_anonymous(ANONYMOUS_DIR, perm='elradfmwMT')
-
   handler = FTPHandler
   handler.authorizer = authorizer
 
