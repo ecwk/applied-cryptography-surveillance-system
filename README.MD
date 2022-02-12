@@ -7,19 +7,19 @@
 ## To Run
 ### Client
 1) Open another new terminal window and change directory into src/client
-2) Run the command `python -m client/index.py` to start the client.
+2) Run the command `python -m src/client/index.py` to start the client.
 
 ### Server
 1) Open a new terminal window and change directory into the src/server
-2) Run the command `python -m server/index.py` to start the server.
+2) Run the command `python -m src/server/index.py` to start the server.
 
 ## User Configuration
 ### Client
-1) Edit client/config.ini and change the username
+1) Edit src/client/config.ini and change the username
 
 ### Server
 - Use the TUI interface to add/edit/del users
-- Manually edit the admin/data/users.csv file
+- Manually edit the src/admin/data/users.csv file
 
 ## Keypairs
 The keypair will be generated on the client via the TUI interface. The public key must
