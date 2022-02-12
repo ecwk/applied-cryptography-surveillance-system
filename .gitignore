@@ -6,6 +6,7 @@
 # My own additions
 *temp*
 *.jpg
+.vscode/
 
 # User-specific files
 *.rsuser
