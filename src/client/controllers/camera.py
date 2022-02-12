@@ -151,7 +151,7 @@ def fetchMockData() -> bytes:
     return base64.b64decode(my_pict)
 
 
-def closeSession(username, privateKey):
+def closeSession(username, privateKey, sessionKey):
   data = b'close'
 
   # sign the data
@@ -164,13 +164,26 @@ def closeSession(username, privateKey):
     hashes.SHA256()
   )
 
-  # encrypt data
-  ...
+   # initialise AES encryptor
+  algorithm = algorithms.AES(sessionKey)
+  iv = os.urandom(16)
+  mode = modes.CBC(iv)
+  cipher = Cipher(algorithm, mode)
+
+  # encrypt data + signature
+  extra = len(data) % 16
+  if extra > 0:
+    data = data + (b' ' * (16 - extra))
+  encryptor1 = cipher.encryptor()
+  encryptedData = encryptor1.update(data) + encryptor1.finalize()
+  encryptor2 = cipher.encryptor()
+  encryptedSignature = encryptor2.update(signature) + encryptor2.finalize()
   
   response = AuthApi.post('/close', {
     'username': username,
-    'message': data,
-    'signature': signature
+    'message': encryptedData,
+    'signature': encryptedSignature,
+    'iv': iv
   })
   
   return True
