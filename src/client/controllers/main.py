@@ -51,12 +51,20 @@ def main():
 
             image = camera.fetchMockData()
             if len(image) == 0:
-              time.sleep(1)
+              time.sleep(10)
               logger.log(f'[{CAMERA_ID}]_Random no motion detected_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
             else:
               filename = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
-              if camera.uploadServer(CAMERA_ID, filename, image, sessionKey):
-                logger.log(f'[{CAMERA_ID}]_Uploaded {filename}_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+              
+              successfulUpload = False
+              while successfulUpload == False:
+                if camera.uploadServer(CAMERA_ID, filename, image, sessionKey, privKey):
+                  logger.log(f'[{CAMERA_ID}]_Uploaded {filename}')
+                  successfulUpload = True
+                else:
+                  logger.log(f'[{CAMERA_ID}]_Failed to upload {filename}')
+                  logger.log(f'[{CAMERA_ID}]_Retrying')
+
           except KeyboardInterrupt: exit()
 
       if cameraOn:
