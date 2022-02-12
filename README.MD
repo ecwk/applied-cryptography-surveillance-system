@@ -8,6 +8,7 @@
 ### Client
 1) Open another new terminal window and change directory into src/client
 2) Run the command `python -m src/client/index.py` to start the client.
+Note - the private key's passphrase is "pass"
 
 ### Server
 1) Open a new terminal window and change directory into the src/server
