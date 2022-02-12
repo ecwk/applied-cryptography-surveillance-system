@@ -9,7 +9,6 @@ from cryptography.hazmat.primitives.ciphers import algorithms, Cipher, modes
 
 from auth import AuthApi
 from util.config import config
-from util.tools import fetchMockData
 
 os.chdir(pathlib.Path(__file__).parent.resolve())
 USERNAME = config['DEFAULT'].get('username')
@@ -30,24 +29,19 @@ def getChallengeMsg(username):
   return challengeMsg
 
 
-def decryptChallenge(challengeMsg):
-  privateKey = ''
-  with open('../keys/id_rsa', 'r') as f:
-    privateKey = f.read().encode('utf-8')
-    privateKey = load_ssh_private_key(privateKey, password=None)
-
-    try:
-      decrypted = privateKey.decrypt(
-        challengeMsg,
-        padding.OAEP(
-          mgf=padding.MGF1(algorithm=hashes.SHA256()),
-          algorithm=hashes.SHA256(),
-          label=None
-        )
+def decryptChallenge(challengeMsg, privateKey):
+  try:
+    decrypted = privateKey.decrypt(
+      challengeMsg,
+      padding.OAEP(
+        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+        algorithm=hashes.SHA256(),
+        label=None
       )
-    except ValueError:
-      print('Invalid private key')
-      return None
+    )
+  except ValueError:
+    print('Invalid private key')
+    return None
 
   return decrypted
 
@@ -114,26 +108,8 @@ def uploadServer(filename, data, sessionKey):
       'iv': iv
     })
     body = response['body']
-    ## THIS WILL BE TRANSFERRED TO SERVER, ftp calls made on loopback addr
-    # ftp = FTP()
-    # ftp.connect(SERVER_IP , SERVER_PORT)
-
-    # camId = str(CAMERA_ID).rjust(3, '0')
-    # username = f'cam-{camId}'
-    # password = ''
-    # ftp.login(username, password)
-
-    # ftp.storbinary('STOR ' + file_name, io.BytesIO( file_data ) )
-    # ftp.quit()
     return True
   # except Exception as e:
   #   print(e, "while sending", filename )
   #   return False
-
-
-# decryptor = cipher.decryptor()
-# plaintext = decryptor.update(ciphertext) + decryptor.finalize()
-# # remove space padding
-# plaintext = plaintext.rstrip(b' ')
-
-# print(plaintext)
+  
