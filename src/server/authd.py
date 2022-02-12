@@ -165,12 +165,29 @@ def startAuthServer():
       algorithm = algorithms.AES(sessionKey)
       mode = modes.CBC(iv)
       cipher = Cipher(algorithm, mode)
-      decryptor = cipher.decryptor()
 
       # decrypt data
-      decryptedData = decryptor.update(data) + decryptor.finalize()
+      decryptor1 = cipher.decryptor()
+      decryptedData = decryptor1.update(data) + decryptor1.finalize()
       decryptedData = decryptedData.rstrip(b' ')
 
+      # decrypt signature
+      decryptor2 = cipher.decryptor()
+      decryptedSignature = decryptor2.update(body.get('signature')) + decryptor2.finalize()
+      decryptedSignature = decryptedSignature.rstrip(b' ')
+
+      # verify signature
+      pubKey = user['pubKey'].encode('utf-8')
+      pubKey = load_ssh_public_key(pubKey)
+      pubKey.verify(
+        decryptedSignature,
+        decryptedData,
+        padding.PSS(
+          mgf=padding.MGF1(hashes.SHA256()),
+          salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256()
+      )
 
       # upload file via ftp on server's loopback
       uploadToFtpd(username, filename, decryptedData)
@@ -180,6 +197,15 @@ def startAuthServer():
         if session['userId'] == user['userId']:
           USER_SESSIONS.pop(i)
           break
+
+    except InvalidSignature as e:
+      res.status(401)
+      res.send({ 'message': 'invalid signature' })
+      for i, session in enumerate(USER_SESSIONS):
+        if session['userId'] == user['userId']:
+          USER_SESSIONS.pop(i)
+          break
+      return
 
     except Exception as e:
       # if wrong sessionKey
