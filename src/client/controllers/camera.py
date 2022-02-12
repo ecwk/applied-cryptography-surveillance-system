@@ -140,27 +140,6 @@ def fetchMockData() -> bytes:
     return base64.b64decode(my_pict)
 
 
-def runCamera(CAMERA_ID, privateKey):
-  while True:
-    challengeMsg = getChallengeMsg(CAMERA_ID)
-    decrypted = decryptChallenge(challengeMsg, privateKey)
-    sessionKey = getSessionKey(CAMERA_ID, decrypted, privateKey)
-
-    try:
-      if not sessionKey:
-        raise Exception("Session key not found")
-
-      image = fetchMockData()
-      if len(image) == 0:
-        time.sleep(10)
-        logger.log(f'[{CAMERA_ID}]_Random no motion detected_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
-      else:
-        filename = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
-        if uploadServer(CAMERA_ID, filename, image, sessionKey):
-          logger.log(f'[{CAMERA_ID}]_Uploaded {filename}_{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
-    except KeyboardInterrupt: exit()
-    
-
 def closeSession(username, privateKey):
   data = b'close'
 
