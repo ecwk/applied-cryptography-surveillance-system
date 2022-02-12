@@ -7,14 +7,23 @@ from ftplib import FTP
 import io
 import random
 
-from auth.auth import getChallengeMsg, decryptChallenge
 from util.config import config
 
 os.chdir(pathlib.Path(__file__).parent.resolve())
-CAMERA_ID = 1   # This ID is unique for each camera installed, should it be in the code?
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = 2121
 USERNAME = config['DEFAULT'].get('username')
+
+
+def uploadToFtpd(username, filename, data):
+  ftp = FTP()
+  ftp.connect(SERVER_IP , SERVER_PORT)
+
+  ftp.login(username, '')
+  ftp.storbinary('STOR ' + filename, io.BytesIO( data ) )
+  ftp.quit()
+  return True
+
 
 def connect_server_send( file_name: str , file_data: bytes ) -> bool:
   """This function send file_data using FTP and save it as file_name in the remote server. It will simulate intermittent transfer. 
@@ -74,18 +83,16 @@ def get_picture() -> bytes:
 
 
 def onCamera():
-  challengeMsg = getChallengeMsg(USERNAME)
-  decryptedChallenge = decryptChallenge(challengeMsg)
-  # print(decryptedChallenge)
-  # input('Press Enter to continue')
+  # challengeMsg = getChallengeMsg(USERNAME)
+  # decryptedChallenge = decryptChallenge(challengeMsg)
 
-  # while True:
-    # try:  
-    #   image = get_picture()  # get picture
-    #   if len(image) == 0:
-    #     time.sleep(10) # sleep if no image
-    #     print( "Random no motion detected")
-    #   else:
-    #     f_name = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
-    #     if connect_server_send(f_name , image): print(f_name , " sent" )
-    # except KeyboardInterrupt:  exit()  # gracefully exit if control-C detected
+  while True:
+    try:  
+      image = get_picture()  # get picture
+      if len(image) == 0:
+        time.sleep(10) # sleep if no image
+        print( "Random no motion detected")
+      else:
+        f_name = str(CAMERA_ID) + "_" +  datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S.jpg" )
+        if connect_server_send(f_name , image): print(f_name , " sent" )
+    except KeyboardInterrupt:  exit()  # gracefully exit if control-C detected
