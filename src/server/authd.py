@@ -87,7 +87,7 @@ def startAuthServer():
     body = req.body
     username = body.get('username')
     user = UserModel.find({ 'username': username })
-    challengeAttempt = body.get('challengeMsg')
+    signature = body.get('challengeMsg')
 
     # Request Validations
     if not user:
@@ -101,33 +101,45 @@ def startAuthServer():
       res.send({ 'message': 'post /challenge first' })
       return
 
-    # Solve Challenge, gen session key if correct and remove previous challenge
+    # Verify Challenge Signature
     challengeMsg = session['challengeMsg']
-    if challengeAttempt == challengeMsg:
-      for i, session in enumerate(USER_SESSIONS):
-        if session['userId'] == user['userId']:
-          session['challengeMsg'] = None
-          sessionKey = os.urandom(16)
-          USER_SESSIONS[i]['sessionKey'] = sessionKey
-          break
-
-      # Encrypt sessionKey with pubKey before sending
-      pubKey = user['pubKey'].encode('utf-8')
-      pubKey = load_ssh_public_key(pubKey)
-      encryptedSessionKey = pubKey.encrypt(
-        sessionKey,
-        PADDING
+    pubKey = user['pubKey'].encode('utf-8')
+    pubKey = load_ssh_public_key(pubKey)
+    try:
+      pubKey.verify(
+        signature,
+        challengeMsg,
+        padding.PSS(
+          mgf=padding.MGF1(hashes.SHA256()),
+          salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256()
       )
-      res.status(200)
-      res.send({ 'sessionKey': encryptedSessionKey })
-
-    else:
-      for i, session in enumerate(USER_SESSIONS):
-        if session['userId'] == user['userId']:
+    except InvalidSignature:
+      for i, _user in enumerate(USER_SESSIONS):
+        if _user['userId'] == user['userId']:
           USER_SESSIONS.pop(i)
           break
       res.status(401)
-      res.send({ 'message': 'incorrect challenge attempt' })
+      res.send({ 'message': 'challenge not solved' })
+      return
+
+    # if valid challenge signature, generate session key
+    for i, _user in enumerate(USER_SESSIONS):
+      if _user['userId'] == user['userId']:
+        sessionKey = os.urandom(16)
+        USER_SESSIONS[i]['sessionKey'] = sessionKey
+        break
+
+    # Encrypt sessionKey with pubKey before sending
+    pubKey = user['pubKey'].encode('utf-8')
+    pubKey = load_ssh_public_key(pubKey)
+    encryptedSessionKey = pubKey.encrypt(
+      sessionKey,
+      PADDING
+    )
+    res.status(200)
+    res.send({ 'sessionKey': encryptedSessionKey })
 
 
   @app.post('/upload')

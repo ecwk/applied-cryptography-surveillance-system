@@ -64,9 +64,20 @@ def decryptChallenge(challengeMsg, privateKey):
 
 
 def getSessionKey(username, decryptedChallenge, privateKey):
+  # sign the challenge
+  signature = privateKey.sign(
+    decryptedChallenge,
+    padding.PSS(
+      mgf=padding.MGF1(hashes.SHA256()),
+      salt_length=padding.PSS.MAX_LENGTH
+    ),
+    hashes.SHA256()
+  )
+
+
   response = AuthApi.post('/solveChallenge', {
     'username': username,
-    'challengeMsg': decryptedChallenge,
+    'challengeMsg': signature,
   })
   body = response['body']
 
