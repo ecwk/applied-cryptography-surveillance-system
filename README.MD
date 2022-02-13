@@ -8,6 +8,7 @@
 ### Client
 1) Open another new terminal window and change directory into src/client
 2) Run the command `python -m src/client/index.py` to start the client.
+Note - the private key's passphrase is "pass"
 
 ### Server
 1) Open a new terminal window and change directory into the src/server
@@ -18,11 +19,11 @@
 1) Edit src/client/config.ini and change the username
 
 ### Server
-- Use the TUI interface to add/edit/del users
+- Use the web interface to add/edit/del users
 - Manually edit the src/admin/data/users.csv file
 
 ## Keypairs
-The keypair will be generated on the client via the TUI interface. The public key must
+The keypair will be generated on the client via its GUI interface. The public key must
 be located on the server prior to connection, else the server will not be able to
 authenticate the client. There are several ways to transfer the keys
 - Using a secure protocol, such as via SSH
@@ -34,7 +35,7 @@ authenticate the client. There are several ways to transfer the keys
 `controllers/` - contains flow control logic<br/>
 `keys/` - contains public key pair<br/>
 `util/` - conatins helper functions<br/>
-`views/` - contains display data for TUI<br/>
+`views/` - contains display data for GUI<br/>
 `config.ini` - application settings<br/>
 `index.py` - main application entry-point<br/>
 `logs.txt` - camera logs<br/>
