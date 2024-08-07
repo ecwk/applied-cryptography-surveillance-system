@@ -12,7 +12,7 @@
 
 ## Overview
 
-This codebase is a simple client-server model. The server is an FTP service and the client is a script that repeatedly sends mock surveillance captures/images. The [initial](https://github.com/ecwk/applied-cryptography-surveillance-system/tree/13c8d850a36522a5ded5df5e60899dbfa82fd9b6/src) codebase has 0 security measures.
+This codebase is a simple client-server model. The server is an FTP service and the client is a script that repeatedly sends mock surveillance captures/images. The [initial](https://github.com/ecwk/applied-cryptography-surveillance-system/compare/13c8d850a36522a5ded5df5e60899dbfa82fd9b6...main?diff=unified&w=) codebase has 0 security measures.
 
 This project aims to apply cryptographic algorithms to secure this vulnerable surveillance system, adhering to the CIA triad.
 
@@ -59,12 +59,12 @@ Finally, Authenticated Encryption (AE) with MAC-then-Encrypt (EtM) is used to se
 
 ### Client
 
-1. Edit src/client/config.ini and change the username
+1. Edit `src/client/config.ini` and change the username
 
 ### Server
 
-- Use the web interface to add/edit/del users
 - Manually edit the src/admin/data/users.csv file
+- (WIP) Use the web interface to add/edit/del users
 
 ## Keypairs
 
