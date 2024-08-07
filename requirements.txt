@@ -1,5 +1,5 @@
-pyftpdlib>=1.5.6 # ftp server
-pyOpenSSL>=22.0.0 # OpenSSL, provide SSL support
-bcrypt>=3.2.0 # to create hashed password, also used to add passphrase to private key
-cryptography>=36.0.1
-flask>=2.0.2
+pyftpdlib==1.5.6 # ftp server
+pyOpenSSL==22.0.0 # OpenSSL, provide SSL support
+bcrypt==3.2.0 # to create hashed password, also used to add passphrase to private key
+cryptography==36.0.1
+flask==2.0.2
