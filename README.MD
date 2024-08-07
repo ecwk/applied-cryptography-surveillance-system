@@ -1,4 +1,4 @@
-# ACG CA2
+# Applied Cryptography in a Surveillance System (School Assignment, ACG CA2)
 
 ## Prerequisites
 1) Install Python 3.9 or later
