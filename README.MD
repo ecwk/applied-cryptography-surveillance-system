@@ -12,9 +12,9 @@
 
 ## Overview
 
-This codebase is a simple client-server model. The server is an FTP service and the client is a script that repeatedly sends mock surveillance captures/images. There exists 0 security measures.
+This codebase is a simple client-server model. The server is an FTP service and the client is a script that repeatedly sends mock surveillance captures/images. The [initial](https://github.com/ecwk/applied-cryptography-surveillance-system/tree/13c8d850a36522a5ded5df5e60899dbfa82fd9b6/src) codebase has 0 security measures.
 
-This project aims to apply cryptographic algorithms to secure this [vulnerable surveillance system](https://github.com/ecwk/applied-cryptography-surveillance-system/tree/13c8d850a36522a5ded5df5e60899dbfa82fd9b6/src), adhering to the CIA triad.
+This project aims to apply cryptographic algorithms to secure this vulnerable surveillance system, adhering to the CIA triad.
 
 ### Implementation
 
